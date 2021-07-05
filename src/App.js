@@ -36,7 +36,7 @@ class App extends React.Component {
                <LoginButton/>
                 </>}
               </Route>
-              <Route path="/profile">
+              <Route exact path="/profile">
                 <Profile/>
               </Route>
               {/* TODO: add a route with a path of '/profile' that renders a `Profile` component */}
