@@ -4,13 +4,18 @@ import Jumbotron from 'react-bootstrap/Jumbotron';
 import './BestBooks.css';
 import { withAuth0 } from '@auth0/auth0-react';
 import axios from 'axios';
+import {Card , Button } from 'react-bootstrap'
+
 
 class MyFavoriteBooks extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       books: [],
-      email:''
+      email:'',
+      bookname:'',
+      description:'',
+      status:''
     }
 
   }
@@ -36,62 +41,205 @@ class MyFavoriteBooks extends React.Component {
     }
   }
 
+   getUserdata=(e)=>{
+    this.setState({
+       email:e.target.value
+    });
+  }
+
+ sendRequest=(e)=>{
+ e.preventDefault();
+ const booksURL = `${process.env.REACT_APP_SERVER_DOMAIN}/books?email=${this.state.email}`
+      axios.get(booksURL).then(res => {
+        console.log(res.data)
+        // if(res.data=='not found' ){
+        //   this.setState({
+        //     books:[{
+        //       name:"not found"
+        //     }]
+             
+        //   })
+        // }
+        // else{
+          this.setState({
+        
+            books: res.data
+
+          })
+         
+        // }
+       
+        console.log('books' , this.state.books)
+      })
+}
+getBookName=(e)=>{
+  this.setState({
+    bookname:e.target.value
+  })
+}
+// addBooks=async(e)=>{
+// e.preventDefault();
+// const reqBody = {
+//   useremail: 'baydoun.net@hotmail.com',
+//   bookname:'wars'
+
+ 
+// }
+
+// console.log(reqBody)
+// const results =await axios.post(`${process.env.REACT_APP_SERVER_DOMAIN}/add-book`, reqBody) 
+// console.log('books state data' ,results.data)
+//   this.setState({
+//      books:results.data
+     
+//   })
+
+// // .catch(error =>
+// //   alert(error.message)
+// // )
+
+
+
+
+
+ 
+// }
+
+addBooks= async (e)=>{
+  e.preventDefault();
+  const {user}=this.props.auth0;
+  const bookData={
+    name:this.state.bookname,
+    email:user.email
+  }
+  console.log(bookData);
+  const addBookURL=await axios.post(`${process.env.REACT_APP_SERVER_DOMAIN}/add-book`,bookData);
+  console.log(addBookURL.data);
+  this.setState({
+    books:addBookURL.data
+  })
+}
+
+removeBook=async(book_idx)=>{
+ 
+  const {user}=this.props.auth0;
+  console.log(book_idx);
+  const qureyEmail={
+    email:user.email
+  }
+  const deleteURL=await axios.delete(`${process.env.REACT_APP_SERVER_DOMAIN}/removebook/${Number(book_idx)}`,{params:qureyEmail});
+  console.log(deleteURL);
+  this.setState({
+    books:deleteURL.data
+  })
+}
+
+getName=(e)=>{
+  e.preventDefault();
+  this.setState({
+    bookname:e.target.value
+  })
+}
+getDescription=(e)=>{
+  console.log(e.target.value);
+  e.preventDefault();
+  this.setState({
+    deccription:e.target.value
+  })
+}
+getStatus=(e)=>{
+  e.preventDefault();
+  this.setState({
+    status:e.target.value
+  })
+}
+
+updateBook= async (e,index)=>{
+  e.preventDefault();
+  console.log(index);
+  const {user}=this.props.auth0;
+  const bookData={
+    name:this.state.name,
+    description:this.state.description,
+    status:this.state.status,
+    email:user.email
+  }
+  console.log(bookData);
+  const updateBookURL=await axios.put(`${process.env.REACT_APP_SERVER_DOMAIN}/updatebook/${index}`,bookData);
+  console.log(updateBookURL.data);
+  this.setState({
+    books:updateBookURL.data
+  })
+}
+handleModal=(e)=>{
+  e.preventDefault();
+   {/* <form className="update-form" onSubmit={(e)=>updateBook(e,this.props.index)}>
+                            <label>Name:</label>
+                            <input type="text" onChange={(e)=>this.getName(e)}></input><br></br>
+                            <label>Decription:</label>
+                            <input type="text" onChange={(e)=>this.getDescription(e)}></input><br></br>
+                            <label>Status:</label>
+                            <input type="text" onChange={(e)=>this.getStatus(e)}></input>
+                            <br></br>
+                            <button type="submit" >Update Book</button>
+                        </form> */}
+}
   render() {
 
-    let getUserdata=(e)=>{
-      this.setState({
-         email:e.target.value
-      });
-    }
+   
 
- let sendRequest=(e)=>{
-   e.preventDefault();
-   const booksURL = `${process.env.REACT_APP_SERVER_DOMAIN}/books?email=${this.state.email}`
-        axios.get(booksURL).then(res => {
-          console.log(res.data)
-          if(res.data=='not found' ){
-            this.setState({
-              books:[{
-                name:"not found"
-              }]
-               
-            })
-          }
-          else{
-            this.setState({
-          
-              books: res.data
-  
-            })
-          }
-         
-          console.log('books' , this.state.books)
-        })
- }
     return (
       <Jumbotron>
         <h1>My Favorite Books</h1>
         
         <form>
-          <input type='text' placeholder='email' onChange={(e)=>{getUserdata(e)}}/>
-          <button onClick={(e)=>{sendRequest(e)}}>search by email</button>
+          <input type='text' placeholder='email' onChange={(e)=>{this.getUserdata(e)}}/>
+          <button onClick={(e)=>{this.sendRequest(e)}}>search by email</button>
+        </form>
+        <form>
+          <input type='text' placeholder='Book Name' onChange={(e)=>{this.getBookName(e)}}/>
+          <button onClick={(e)=>{this.addBooks(e)}}>Add</button>
         </form>
   
         <p>
           This is a collection of my favorite books
         </p>
         
-        <ol>
-         
-        {
+       
+         <ol>
+        {this.state.books.length!==0 &&
           
-          this.state.books.map(item => {
-            return <li>{item.name}</li>
+          this.state.books.map((item , indx) => {
+            return    <>
+            <Card className='cardBook' key={indx} id={indx}>
+              <Card.Body >
+                <Card.Title>Book name: {item.name}</Card.Title>
+                <Card.Text>Description: {item.description}</Card.Text>
+                <Card.Text>Status: {item.status}</Card.Text>
+              </Card.Body>
+              <Card.Footer>
+              <Button variant="danger" onClick={(e)=>this.removeBook(indx)}>Delete</Button>
+                 <div className="space"></div>
+                 <Button variant="warning" onClick={(e)=>{this.handleModal(indx)}}>Update</Button>
+                {/* <UpdateBookBtn key={indx} id={indx}
+                  getName={this.getName}
+                  getDescription={this.getDescription}
+                  getStatus={this.getStatus}
+                  updateBook={this.updateBook}
+                  index={indx}
+                  bookName= {item.name}
+                />  */}
+              </Card.Footer>
+              </Card>
+            </>
+
+
+
           })
           
         } 
-        
         </ol>
+       
         
 
       </Jumbotron>
