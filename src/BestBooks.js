@@ -4,7 +4,8 @@ import Jumbotron from 'react-bootstrap/Jumbotron';
 import './BestBooks.css';
 import { withAuth0 } from '@auth0/auth0-react';
 import axios from 'axios';
-import {Card , Button } from 'react-bootstrap'
+import {Card , Button  } from 'react-bootstrap'
+import Updatebtn from './Updatebtn';
 
 
 class MyFavoriteBooks extends React.Component {
@@ -154,12 +155,12 @@ getStatus=(e)=>{
   })
 }
 
-updateBook= async (e,index)=>{
+updateBookData= async (e,index)=>{
   e.preventDefault();
   console.log(index);
   const {user}=this.props.auth0;
   const bookData={
-    name:this.state.name,
+    name:this.state.bookname,
     description:this.state.description,
     status:this.state.status,
     email:user.email
@@ -220,15 +221,15 @@ handleModal=(e)=>{
               <Card.Footer>
               <Button variant="danger" onClick={(e)=>this.removeBook(indx)}>Delete</Button>
                  <div className="space"></div>
-                 <Button variant="warning" onClick={(e)=>{this.handleModal(indx)}}>Update</Button>
-                {/* <UpdateBookBtn key={indx} id={indx}
-                  getName={this.getName}
-                  getDescription={this.getDescription}
-                  getStatus={this.getStatus}
-                  updateBook={this.updateBook}
-                  index={indx}
-                  bookName= {item.name}
-                />  */}
+                         <div className="space"></div>
+              <Updatebtn key={indx} id={indx}
+                getNm={this.getName}
+                getStatus={this.getStatus}
+                getDesc={this.getDescription}
+                updateBook={this.updateBookData}
+                indx={indx}
+                bookName= {item.name}
+              />
               </Card.Footer>
               </Card>
             </>
